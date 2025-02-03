@@ -321,7 +321,7 @@ const decreaseCellCount = (id: number): void => {
   --color-secondary: var(--color-primary-white);
   --color-primary-bg: #1d1d1d;
   --color-secondary-bg: 38, 38, 38;
-  --color-hover-backgound: var(--color-hover-black);
+  --color-hover-background: var(--color-secondary-white);
 
   --font-size-base: 16px;
   --skeleton-gradient: linear-gradient(90deg, #3C3C3C 0%, #444 51.04%, #333 100%)
@@ -331,6 +331,7 @@ const decreaseCellCount = (id: number): void => {
   --color-primary-bg: rgba(var(--color-primary-white), .9);
   --color-secondary-bg: var(--color-secondary-white);
   --color-secondary: var(--color-primary-black);
+  --color-hover-background: var(--color-hover-black)
 }
 
 *,
@@ -638,7 +639,7 @@ button:hover {
 }
 
 .inventory__cell.active {
-  background-color: var(--color-hover-backgound);
+  background-color: var(--color-hover-background);
 }
 
 .inventory__icon {
@@ -846,10 +847,6 @@ button:hover {
   line-height: normal;
 }
 
-.inventory__button:hover {
-  background-color: rgb(var(--color-hover-black));
-}
-
 // - третий главный блок, имитация textarea.
 .textarea {}
 
@@ -888,5 +885,8 @@ button:hover {
 .btn-secondary {
   background-color: rgb(var(--color-secondary));
   color: var(--color-primary-bg);
+}
+.btn-secondary:hover {
+  background-color: rgb(var(--color-hover-background));
 }
 </style>
