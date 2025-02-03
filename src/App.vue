@@ -702,7 +702,9 @@ button:hover {
   border-bottom: none;
   border-right: none;
   border-top-left-radius: 6px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 16px;
   height: 16px;
   color: rgb(var(--color-secondary));
