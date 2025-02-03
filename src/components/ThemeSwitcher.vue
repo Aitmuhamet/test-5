@@ -52,8 +52,8 @@ onMounted(() => {
   position: absolute;
   top: -10px;
   left: -10px;
-  width: calc(100% + 20px);
-  height: calc(100% + 20px);
+  width: calc(100% + 30px);
+  height: calc(100% + 30px);
 }
 
 .theme-switcher:hover {
