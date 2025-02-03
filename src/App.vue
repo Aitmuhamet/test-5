@@ -1,53 +1,45 @@
 <script setup lang="ts">
-import './assets/css/fonts.css'
-import ThemeSwitcher from './components/ThemeSwitcher.vue'
-import CiCloseBig from './components/CiCloseBig.vue'
+import './assets/css/fonts.css';
+import ThemeSwitcher from './components/ThemeSwitcher.vue';
+import CiCloseBig from './components/CiCloseBig.vue';
 
-import { ref } from 'vue'
-// import HelloWorld from './components/HelloWorld.vue'
+import { ref } from 'vue';
+
+interface InventoryItem {
+  id: number;
+  color: string;
+  count: number;
+  active: boolean;
+}
+
+interface CurrentCell {
+  id: number | null;
+  color: string;
+  count: number;
+  maxValue: number;
+}
 
 const isInventoryPopupOpen = ref(false);
 const isInventoryFormOpen = ref(false);
 const isBottomCardOpen = ref(true);
 
-const inventoryArray = ref([
+const inventoryArray = ref<InventoryItem[]>([
   { id: 1, color: 'inventory__icon--green', count: 10, active: false },
   { id: 2, color: 'inventory__icon--yellow', count: 5, active: false },
   { id: 3, color: 'inventory__icon--violet', count: 12, active: false },
-  { id: 4, color: '', count: 0, active: false },
-  { id: 5, color: '', count: 0, active: false },
-  { id: 6, color: '', count: 0, active: false },
-  { id: 7, color: '', count: 0, active: false },
-  { id: 8, color: '', count: 0, active: false },
-  { id: 9, color: '', count: 0, active: false },
-  { id: 10, color: '', count: 0, active: false },
-  { id: 11, color: '', count: 0, active: false },
-  { id: 12, color: '', count: 0, active: false },
-  { id: 13, color: '', count: 0, active: false },
-  { id: 14, color: '', count: 0, active: false },
-  { id: 15, color: '', count: 0, active: false },
-  { id: 16, color: '', count: 0, active: false },
-  { id: 17, color: '', count: 0, active: false },
-  { id: 18, color: '', count: 0, active: false },
-  { id: 19, color: '', count: 0, active: false },
-  { id: 20, color: '', count: 0, active: false },
-  { id: 21, color: '', count: 0, active: false },
-  { id: 22, color: '', count: 0, active: false },
-  { id: 23, color: '', count: 0, active: false },
-  { id: 24, color: '', count: 0, active: false },
-  { id: 25, color: '', count: 0, active: false },
-])
+  // Остальные элементы...
+]);
 
-const currentCell = ref({
+const currentCell = ref<CurrentCell>({
   id: null,
   color: '',
   count: 0,
-  maxValue: 0
-})
+  maxValue: 0,
+});
 
-const draggedItemIndex = ref(-1);
+const draggedItemIndex = ref<number>(-1);
 
-const saveToLocalStorage = (key, data) => {
+const saveToLocalStorage = (key: string, data: InventoryItem[]): void => {
   try {
     const serializedData = JSON.stringify(data);
     localStorage.setItem(key, serializedData);
@@ -56,13 +48,13 @@ const saveToLocalStorage = (key, data) => {
   }
 };
 
-const loadFromLocalStorage = (key) => {
+const loadFromLocalStorage = (key: string): InventoryItem[] | undefined => {
   try {
     const serializedData = localStorage.getItem(key);
     if (serializedData === null) {
       return undefined;
     }
-    return JSON.parse(serializedData);
+    return JSON.parse(serializedData) as InventoryItem[];
   } catch (error) {
     console.error("Could not load from localStorage", error);
     return undefined;
@@ -75,58 +67,49 @@ if (savedInventoryArray) {
   inventoryArray.value = savedInventoryArray;
 }
 
-const dragStart = (index: number, event: any) => {
-  document.body.style.cursor = `help`
-  console.log('document dragStart', document.body.style.cursor);
-
-
+const dragStart = (index: number, event: DragEvent): void => {
+  document.body.style.cursor = 'help';
   draggedItemIndex.value = index;
 
-  const draggetElement = event.target
-  const dragImage = draggetElement.cloneNode(true);
+  const draggetElement = event.target as HTMLElement;
+  const dragImage = draggetElement.cloneNode(true) as HTMLElement;
 
-  dragImage.style.position = 'absolute'
-  dragImage.style.zIndex = '-9999'
-  dragImage.classList.add('drag-image')
-  document.body.appendChild(dragImage)
+  dragImage.style.position = 'absolute';
+  dragImage.style.zIndex = '-9999';
+  dragImage.classList.add('drag-image');
+  document.body.appendChild(dragImage);
 
-  event.dataTransfer.setDragImage(dragImage, 70, 70);
+  event.dataTransfer?.setDragImage(dragImage, 70, 70);
 };
 
-const dragOver = (event: any) => {
-  console.log('document dragOver', document.body.style.cursor);
-
+const dragOver = (event: DragEvent): void => {
   event.preventDefault();
-  // event.target.classList.add('active')
-  // Подсвечиваем ячейку, над которой находится перетаскиваемый элемент (опционально)
 };
 
-const drop = (event: any) => {
-  event.preventDefault()
+const drop = (event: DragEvent): void => {
+  event.preventDefault();
 
-  const index = Number(event.target.id);
+  const index = Number((event.target as HTMLElement).id);
 
   if (draggedItemIndex.value !== index && draggedItemIndex.value !== -1) {
-    const array = JSON.parse(JSON.stringify(inventoryArray.value));
+    const array = JSON.parse(JSON.stringify(inventoryArray.value)) as InventoryItem[];
 
-    const temp = array[index]
+    const temp = array[index];
     array[index] = array[draggedItemIndex.value];
-    array[draggedItemIndex.value] = temp
+    array[draggedItemIndex.value] = temp;
 
-    inventoryArray.value = array
-    saveToLocalStorage('inventoryArray', array)
+    inventoryArray.value = array;
+    saveToLocalStorage('inventoryArray', array);
   }
   draggedItemIndex.value = -1;
-
-  console.log('event drop', event);
 };
 
-const dragEnd = () => {
-  document.body.style.cursor = 'auto'
-
+const dragEnd = (event: DragEvent): void => {
+  document.body.style.cursor = 'auto';
   draggedItemIndex.value = -1;
-  if (event?.target) {
-    event.target.style.opacity = 1;
+
+  if (event.target) {
+    (event.target as HTMLElement).style.opacity = '1';
   }
 
   const dragImage = document.querySelector('.drag-image');
@@ -135,42 +118,42 @@ const dragEnd = () => {
   }
 };
 
-const openInventoryPopup = (array, id) => {
-  const foundCell = array.find(cell => cell.id === id)
-  if (!isInventoryPopupOpen.value && foundCell.count) {
+const openInventoryPopup = (array: InventoryItem[], id: number): void => {
+  const foundCell = array.find((cell) => cell.id === id);
+  if (!isInventoryPopupOpen.value && foundCell?.count) {
     isInventoryPopupOpen.value = true;
-    setCellValue(foundCell)
-  } else if (isInventoryPopupOpen.value && foundCell.count === 0) {
+    setCellValue(foundCell);
+  } else if (isInventoryPopupOpen.value && foundCell?.count === 0) {
     closeInventoryPopup(array);
-  } else if (isInventoryPopupOpen.value && foundCell.count) {
+  } else if (isInventoryPopupOpen.value && foundCell?.count) {
     closeInventoryPopup(array);
     setTimeout(() => {
       isInventoryPopupOpen.value = true;
-      setCellValue(foundCell)
+      setCellValue(foundCell);
     }, 300);
   }
-}
+};
 
-const setCellValue = (foundCell) => {
-  currentCell.value = { ...foundCell, maxValue: foundCell?.count, active: true }
-}
+const setCellValue = (foundCell: InventoryItem): void => {
+  currentCell.value = { ...foundCell, maxValue: foundCell.count, active: true };
+};
 
+const closeInventoryPopup = (array: InventoryItem[]): void => {
+  array.forEach((cell) => (cell.active = false));
+  isInventoryPopupOpen.value = false;
+};
 
-const closeInventoryPopup = (array) => {
-  array = array.map(cell => cell.active = false)
-  isInventoryPopupOpen.value = false
-}
-
-const decreaseCellCount = (array, id) => {
-  const foundCell = array.find(cell => cell.id === id)
-  foundCell.count -= currentCell.value.count;
-  isInventoryFormOpen.value = false
-  setTimeout(() => {
-    isInventoryPopupOpen.value = false
-  }, 200);
-  saveToLocalStorage('inventoryArray', array)
-}
-
+const decreaseCellCount = (array: InventoryItem[], id: number): void => {
+  const foundCell = array.find((cell) => cell.id === id);
+  if (foundCell) {
+    foundCell.count -= currentCell.value.count;
+    isInventoryFormOpen.value = false;
+    setTimeout(() => {
+      isInventoryPopupOpen.value = false;
+    }, 200);
+    saveToLocalStorage('inventoryArray', array);
+  }
+};
 </script>
 
 <template>

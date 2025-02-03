@@ -1,19 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
-const isLight = ref(false)
+const isLight = ref<boolean>(false);
 
-const toggleTheme = () => {
-    isLight.value = !isLight.value
-    document.documentElement.classList.toggle('light', isLight.value)
-    localStorage.setItem('theme', isLight.value ? 'light' : 'dark')
-}
+const toggleTheme = (): void => {
+  isLight.value = !isLight.value;
+  document.documentElement.classList.toggle('light', isLight.value);
+  localStorage.setItem('theme', isLight.value ? 'light' : 'dark');
+};
 
 onMounted(() => {
-    const savedTheme = localStorage.getItem('theme')
-    isLight.value = savedTheme === 'light'
-    document.documentElement.classList.toggle('light', isLight.value)
-})
+  const savedTheme = localStorage.getItem('theme');
+  isLight.value = savedTheme === 'light';
+  document.documentElement.classList.toggle('light', isLight.value);
+});
+
 </script>
 
 <template>
