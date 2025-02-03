@@ -872,6 +872,7 @@ button:hover {
 }
 
 .btn-primary {
+  color: rgb(var(--color-secondary));
   background-color: var(--color-primary-red);
 }
 
