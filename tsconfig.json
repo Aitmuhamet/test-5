@@ -7,7 +7,9 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "target": "es2015",
+    "lib": ["es2015", "dom"],
   },
   "include": [
     "src/**/*.ts", 
