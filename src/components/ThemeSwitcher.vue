@@ -6,8 +6,6 @@ import Sun from './SolarSun2BoldDuotone.vue'
 const isLight = ref<boolean>(false);
 
 const toggleTheme = (): void => {
-    console.log('change theme');
-    
   isLight.value = !isLight.value;
   document.documentElement.classList.toggle('light', isLight.value);
   localStorage.setItem('theme', isLight.value ? 'light' : 'dark');
