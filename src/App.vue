@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import './assets/css/fonts.css'
+import ThemeSwitcher from './components/ThemeSwitcher.vue'
+import CiCloseBig from './components/CiCloseBig.vue'
 
 import { ref } from 'vue'
 // import HelloWorld from './components/HelloWorld.vue'
@@ -45,10 +47,38 @@ const currentCell = ref({
 
 const draggedItemIndex = ref(-1);
 
+const saveToLocalStorage = (key, data) => {
+  try {
+    const serializedData = JSON.stringify(data);
+    localStorage.setItem(key, serializedData);
+  } catch (error) {
+    console.error("Could not save to localStorage", error);
+  }
+};
+
+const loadFromLocalStorage = (key) => {
+  try {
+    const serializedData = localStorage.getItem(key);
+    if (serializedData === null) {
+      return undefined;
+    }
+    return JSON.parse(serializedData);
+  } catch (error) {
+    console.error("Could not load from localStorage", error);
+    return undefined;
+  }
+};
+
+const savedInventoryArray = loadFromLocalStorage('inventoryArray');
+
+if (savedInventoryArray) {
+  inventoryArray.value = savedInventoryArray;
+}
+
 const dragStart = (index: number, event: any) => {
   document.body.style.cursor = `help`
   console.log('document dragStart', document.body.style.cursor);
-  
+
 
   draggedItemIndex.value = index;
 
@@ -65,7 +95,7 @@ const dragStart = (index: number, event: any) => {
 
 const dragOver = (event: any) => {
   console.log('document dragOver', document.body.style.cursor);
-  
+
   event.preventDefault();
   // event.target.classList.add('active')
   // Подсвечиваем ячейку, над которой находится перетаскиваемый элемент (опционально)
@@ -84,6 +114,7 @@ const drop = (event: any) => {
     array[draggedItemIndex.value] = temp
 
     inventoryArray.value = array
+    saveToLocalStorage('inventoryArray', array)
   }
   draggedItemIndex.value = -1;
 
@@ -103,8 +134,6 @@ const dragEnd = () => {
     dragImage.remove();
   }
 };
-
-
 
 const openInventoryPopup = (array, id) => {
   const foundCell = array.find(cell => cell.id === id)
@@ -139,11 +168,14 @@ const decreaseCellCount = (array, id) => {
   setTimeout(() => {
     isInventoryPopupOpen.value = false
   }, 200);
+  saveToLocalStorage('inventoryArray', array)
 }
+
 </script>
 
 <template>
   <div class="app-inner">
+    <ThemeSwitcher />
     <div class="screen">
       <div class="screen__container">
         <div class="row row--main">
@@ -197,13 +229,10 @@ const decreaseCellCount = (array, id) => {
                 :class="{ 'inventory__popup--open': isInventoryPopupOpen }"
               >
                 <button
-                  class="inventory__close"
+                  class="inventory--close"
                   @click="closeInventoryPopup(inventoryArray, currentCell.id)"
                 >
-                  <img
-                    src="./assets/carbon-close.svg"
-                    alt=""
-                  >
+                  <CiCloseBig />
                 </button>
                 <div class="inventory__image">
                   <div class="popup__icon-wrapper">
@@ -235,6 +264,7 @@ const decreaseCellCount = (array, id) => {
                     placeholder="Введите количество"
                     v-model="currentCell.count"
                     :max="currentCell.maxValue"
+                    min="0"
                   >
                   <div class="inventory__buttons">
                     <button
@@ -262,10 +292,7 @@ const decreaseCellCount = (array, id) => {
                 class="btn card__btn--close"
                 @click="isBottomCardOpen = false"
               >
-                <img
-                  src="./assets/carbon-close.svg"
-                  alt=""
-                >
+                <CiCloseBig />
               </button>
             </div>
           </div>
@@ -278,10 +305,14 @@ const decreaseCellCount = (array, id) => {
 
 <style lang="scss">
 :root {
+  --color-test: rgb(74, 74, 77);
+
   --color-primary-red: #FA7272;
   --color-hover-red: #F88;
-  --color-primary-white: #FFFFFF;
-  --color-primary-black: #2d2d2d;
+  --color-primary-white: 255, 255, 255;
+  --color-secondary-white: 220, 220, 222;
+  --color-primary-black: 45, 45, 45;
+  --color-hover-black: 74, 74, 74;
   --color-primary-green: #7FAA65;
   --color-secondary-green: #b8d99851;
   --color-primary-yellow: #AA9765;
@@ -296,10 +327,16 @@ const decreaseCellCount = (array, id) => {
   --color-secondary: var(--color-primary-white);
   --color-primary-bg: #1d1d1d;
   --color-secondary-bg: 38, 38, 38;
-  --color-hover-backgound: #2F2F2F;
+  --color-hover-backgound: var(--color-hover-black);
 
   --font-size-base: 16px;
   --skeleton-gradient: linear-gradient(90deg, #3C3C3C 0%, #444 51.04%, #333 100%)
+}
+
+.light {
+  --color-primary-bg: rgba(var(--color-primary-white), .9);
+  --color-secondary-bg: var(--color-secondary-white);
+  --color-secondary: var(--color-primary-black);
 }
 
 *,
@@ -315,6 +352,18 @@ button {
   font: inherit;
   padding: 0;
   margin: 0;
+}
+
+button {
+  outline: none;
+  border: none;
+  transition: transform .2s ease;
+}
+
+button:focus,
+button:hover {
+  outline: 0;
+  border: 0;
 }
 
 :where(h1,
@@ -338,15 +387,18 @@ button {
   display: flex;
   justify-content: center;
 }
+
+.app-inner {
+  display: flex;
+  align-items: center;
+}
+
 .custom-cursor:hover {
   cursor: url('./assets/akar-cursor.svg'), auto;
 }
+
 .custom-cursor:active {
   cursor: url('./assets/hand-grab.svg'), auto;
-}
-
-body {
-  // cursor: 
 }
 
 .btn {
@@ -356,23 +408,7 @@ body {
   align-items: center;
   justify-content: center;
 
-  border: none;
-  outline: none;
-
   font-family: 'SFProDisplay';
-}
-
-.btn-primary {
-  background-color: var(--color-primary-red);
-}
-
-.btn-primary:hover {
-  background-color: var(--color-hover-red);
-}
-
-.btn-secondary {
-  background-color: var(--color-secondary);
-  color: var(--color-primary-black);
 }
 
 .drag-image {
@@ -383,11 +419,12 @@ body {
   width: 105px;
   border: 1px solid var(--color-primary-border);
   background-color: rgb(var(--color-secondary-bg));
-  
+
   .inventory__count {
     display: none;
   }
 }
+
 .drag-image::after {
   content: '';
   position: absolute;
@@ -404,24 +441,31 @@ body {
   opacity: 0.7;
   /* Adjust opacity as needed */
 }
+
 .skeleton-100 {
   width: 100%;
 }
+
 .skeleton-95 {
   width: 95%;
 }
+
 .skeleton-80 {
   width: 80%;
 }
+
 .skeleton-75 {
   width: 75%;
 }
+
 .skeleton-60 {
   width: 60%;
 }
+
 .skeleton-45 {
   width: 45%;
 }
+
 .skeleton--title {
   height: 26px;
   width: 190px;
@@ -524,7 +568,6 @@ body {
 // - колонка, используется для управления шириной блоков.
 .column {
   flex-grow: 1;
-  background: rgb(var(--color-secondary-bg));
 }
 
 .column__inner {
@@ -545,6 +588,8 @@ body {
   border: 1px solid var(--color-primary-border);
   border-radius: 12px;
   height: 100%;
+  background: rgb(var(--color-secondary-bg));
+
 }
 
 // - карточка, первый главный блок.
@@ -659,11 +704,13 @@ body {
   bottom: 0;
 
   border: 1px solid var(--color-primary-border);
+  border-bottom: none;
+  border-right: none;
   border-top-left-radius: 6px;
   display: inline-block;
   width: 16px;
   height: 16px;
-  color: var(--color-primary-white);
+  color: rgb(var(--color-secondary));
   font-family: Inter;
   font-size: 10px;
   font-style: normal;
@@ -726,13 +773,6 @@ body {
   transform: translateX(100%)
 }
 
-// - кнопка закрытия всплывающего окна.
-.inventory__close {
-  // position: absolute;
-  // top: 8px;
-  // right: 8px;
-}
-
 .inventory__content {
   padding: 16px 0;
   border-top: 1px solid var(--color-primary-border);
@@ -760,7 +800,7 @@ body {
   height: 133px;
   padding: 20px;
   border: 1px solid var(--color-primary-border);
-  background: rgba(38, 38, 38, 0.85);
+  background: rgba(var(--color-secondary-bg), .85);
   backdrop-filter: blur(8px);
 
   display: flex;
@@ -785,7 +825,7 @@ body {
   border-radius: 4px;
   border: 1px solid var(--color-primary-border);
   background: rgb(var(--color-secondary-bg));
-
+  color: rgb(var(--color-secondary));
 }
 
 // - контейнер для кнопок формы.
@@ -806,32 +846,46 @@ body {
   line-height: normal;
 }
 
+.inventory__button:hover {
+  background-color: rgb(var(--color-hover-black));
+}
+
 // - третий главный блок, имитация textarea.
 .textarea {}
 
 // - кнопка закрытия textarea.
 .card__btn--close,
-.inventory__close {
+.inventory--close {
   position: absolute;
   width: 24px;
   height: 24px;
   top: 8px;
   right: 8px;
+  font-size: 30px;
+  font-weight: 300;
+  color: rgb(var(--color-secondary));
   background-color: transparent;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-// - скелетон, общий класс для всех скелетонов.
-.skeleton {}
+.card__btn--close:hover,
+.inventory--close:hover {
+  transform: scale(1.05) rotate(90deg);
+}
 
-// - скелетон для заголовка.
-.skeleton--title {}
+.btn-primary {
+  background-color: var(--color-primary-red);
+}
 
-// - скелетон для текста.
-.skeleton--text {}
+.btn-primary:hover {
+  background-color: var(--color-hover-red);
+}
 
-// - скелетон для кнопки.
-.skeleton--button {}
-
-// - скелетон для textarea.
-.skeleton--textarea {}
+.btn-secondary {
+  background-color: rgb(var(--color-secondary));
+  color: var(--color-primary-bg);
+}
 </style>
