@@ -527,6 +527,7 @@ button:hover {
 
   @media (max-width: 1024px) {
     max-width: 90%;
+    transform: scale(100vw / 1024);
   }
 
   @media (max-width: 768px) {
