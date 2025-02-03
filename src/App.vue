@@ -27,8 +27,9 @@ const inventoryArray = ref<InventoryItem[]>([
   }))
 ])
 
+// Изменил тип для currentCell, убрал null для id
 const currentCell = ref<InventoryItem & { maxValue: number }>({
-  id: null,
+  id: 0,  // Заменил null на 0
   color: '',
   count: 0,
   maxValue: 0,
@@ -120,16 +121,17 @@ const dragEnd = (event?: DragEvent): void => {
 }
 
 // Открытие popup инвентаря
-const openInventoryPopup = (array: InventoryItem[], id: number): void => {
-  const foundCell = array.find(cell => cell.id === id)
+// Убрал второй аргумент из вызова функции
+const openInventoryPopup = (id: number): void => {
+  const foundCell = inventoryArray.value.find(cell => cell.id === id)
   if (foundCell) {
     if (!isInventoryPopupOpen.value && foundCell.count) {
       isInventoryPopupOpen.value = true
       setCellValue(foundCell)
     } else if (isInventoryPopupOpen.value && foundCell.count === 0) {
-      closeInventoryPopup(array)
+      closeInventoryPopup()
     } else if (isInventoryPopupOpen.value && foundCell.count) {
-      closeInventoryPopup(array)
+      closeInventoryPopup()
       setTimeout(() => {
         isInventoryPopupOpen.value = true
         setCellValue(foundCell)
@@ -144,21 +146,23 @@ const setCellValue = (foundCell: InventoryItem): void => {
 }
 
 // Закрытие popup инвентаря
-const closeInventoryPopup = (array: InventoryItem[]): void => {
-  array.forEach(cell => cell.active = false)
+// Убрал аргумент из функции
+const closeInventoryPopup = (): void => {
+  inventoryArray.value.forEach(cell => cell.active = false)
   isInventoryPopupOpen.value = false
 }
 
 // Уменьшение количества в ячейке
-const decreaseCellCount = (array: InventoryItem[], id: number): void => {
-  const foundCell = array.find(cell => cell.id === id)
+// Упростил функцию, убрав лишние аргументы
+const decreaseCellCount = (id: number): void => {
+  const foundCell = inventoryArray.value.find(cell => cell.id === id)
   if (foundCell) {
     foundCell.count -= currentCell.value.count
     isInventoryFormOpen.value = false
     setTimeout(() => {
       isInventoryPopupOpen.value = false
     }, 200)
-    saveToLocalStorage('inventoryArray', array)
+    saveToLocalStorage('inventoryArray', inventoryArray.value)
   }
 }
 </script>
@@ -202,7 +206,7 @@ const decreaseCellCount = (array: InventoryItem[], id: number): void => {
                   draggable="true"
                   class="inventory__cell custom-cursor"
                   @dragstart="dragStart(index, $event)"
-                  @click="openInventoryPopup(inventoryArray, cell.id)"
+                  @click="openInventoryPopup(cell.id)"
                 >
                   <div
                     :class="['inventory__icon', cell.color]"
@@ -220,7 +224,7 @@ const decreaseCellCount = (array: InventoryItem[], id: number): void => {
               >
                 <button
                   class="inventory--close"
-                  @click="closeInventoryPopup(inventoryArray, currentCell.id)"
+                  @click="closeInventoryPopup()"
                 >
                   <CiCloseBig />
                 </button>
@@ -263,7 +267,7 @@ const decreaseCellCount = (array: InventoryItem[], id: number): void => {
                     >Отмена</button>
                     <button
                       class="btn inventory__button btn-primary"
-                      @click.prevent="decreaseCellCount(inventoryArray, currentCell.id)"
+                      @click.prevent="decreaseCellCount(currentCell.id)"
                     >Подтвердить</button>
                   </div>
                 </form>
