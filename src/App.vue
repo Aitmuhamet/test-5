@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import './assets/css/fonts.css';
-import ThemeSwitcher from './components/ThemeSwitcher.vue';
-import CiCloseBig from './components/CiCloseBig.vue';
+import { ref } from 'vue'
+import ThemeSwitcher from './components/ThemeSwitcher.vue'
+import CiCloseBig from './components/CiCloseBig.vue'
 
-import { ref } from 'vue';
-
+// Интерфейс для элемента инвентаря
 interface InventoryItem {
   id: number;
   color: string;
@@ -12,169 +11,156 @@ interface InventoryItem {
   active: boolean;
 }
 
-interface CurrentCell {
-  id: number | null;
-  color: string;
-  count: number;
-  maxValue: number;
-}
-
-const isInventoryPopupOpen = ref(false);
-const isInventoryFormOpen = ref(false);
-const isBottomCardOpen = ref(true);
+const isInventoryPopupOpen = ref(false)
+const isInventoryFormOpen = ref(false)
+const isBottomCardOpen = ref(true)
 
 const inventoryArray = ref<InventoryItem[]>([
   { id: 1, color: 'inventory__icon--green', count: 10, active: false },
   { id: 2, color: 'inventory__icon--yellow', count: 5, active: false },
   { id: 3, color: 'inventory__icon--violet', count: 12, active: false },
-  { id: 4, color: '', count: 0, active: false },
-  { id: 5, color: '', count: 0, active: false },
-  { id: 6, color: '', count: 0, active: false },
-  { id: 7, color: '', count: 0, active: false },
-  { id: 8, color: '', count: 0, active: false },
-  { id: 9, color: '', count: 0, active: false },
-  { id: 10, color: '', count: 0, active: false },
-  { id: 11, color: '', count: 0, active: false },
-  { id: 12, color: '', count: 0, active: false },
-  { id: 13, color: '', count: 0, active: false },
-  { id: 14, color: '', count: 0, active: false },
-  { id: 15, color: '', count: 0, active: false },
-  { id: 16, color: '', count: 0, active: false },
-  { id: 17, color: '', count: 0, active: false },
-  { id: 18, color: '', count: 0, active: false },
-  { id: 19, color: '', count: 0, active: false },
-  { id: 20, color: '', count: 0, active: false },
-  { id: 21, color: '', count: 0, active: false },
-  { id: 22, color: '', count: 0, active: false },
-  { id: 23, color: '', count: 0, active: false },
-  { id: 24, color: '', count: 0, active: false },
-  { id: 25, color: '', count: 0, active: false },
-]);
+  ...Array.from({ length: 22 }, (_, index) => ({
+    id: index + 4,
+    color: '',
+    count: 0,
+    active: false
+  }))
+])
 
-const currentCell = ref<CurrentCell>({
+const currentCell = ref<InventoryItem & { maxValue: number }>({
   id: null,
   color: '',
   count: 0,
   maxValue: 0,
-});
+  active: false
+})
 
-const draggedItemIndex = ref<number>(-1);
+const draggedItemIndex = ref(-1)
 
-const saveToLocalStorage = (key: string, data: InventoryItem[]): void => {
+// Сохранение в localStorage
+const saveToLocalStorage = (key: string, data: any): void => {
   try {
-    const serializedData = JSON.stringify(data);
-    localStorage.setItem(key, serializedData);
+    const serializedData = JSON.stringify(data)
+    localStorage.setItem(key, serializedData)
   } catch (error) {
-    console.error("Could not save to localStorage", error);
+    console.error("Could not save to localStorage", error)
   }
-};
-
-const loadFromLocalStorage = (key: string): InventoryItem[] | undefined => {
-  try {
-    const serializedData = localStorage.getItem(key);
-    if (serializedData === null) {
-      return undefined;
-    }
-    return JSON.parse(serializedData) as InventoryItem[];
-  } catch (error) {
-    console.error("Could not load from localStorage", error);
-    return undefined;
-  }
-};
-
-const savedInventoryArray = loadFromLocalStorage('inventoryArray');
-
-if (savedInventoryArray) {
-  inventoryArray.value = savedInventoryArray;
 }
 
+// Загрузка из localStorage
+const loadFromLocalStorage = <T>(key: string): T | undefined => {
+  try {
+    const serializedData = localStorage.getItem(key)
+    return serializedData ? JSON.parse(serializedData) : undefined
+  } catch (error) {
+    console.error("Could not load from localStorage", error)
+    return undefined
+  }
+}
+
+// Загрузка сохраненного массива инвентаря
+const savedInventoryArray = loadFromLocalStorage<InventoryItem[]>('inventoryArray')
+if (savedInventoryArray) {
+  inventoryArray.value = savedInventoryArray
+}
+
+// Обработчики drag and drop
 const dragStart = (index: number, event: DragEvent): void => {
-  document.body.style.cursor = 'help';
-  draggedItemIndex.value = index;
+  document.body.style.cursor = 'help'
+  draggedItemIndex.value = index
 
-  const draggetElement = event.target as HTMLElement;
-  const dragImage = draggetElement.cloneNode(true) as HTMLElement;
+  const draggedElement = event.target as HTMLElement
+  const dragImage = draggedElement.cloneNode(true) as HTMLElement
 
-  dragImage.style.position = 'absolute';
-  dragImage.style.zIndex = '-9999';
-  dragImage.classList.add('drag-image');
-  document.body.appendChild(dragImage);
+  dragImage.style.position = 'absolute'
+  dragImage.style.zIndex = '-9999'
+  dragImage.classList.add('drag-image')
+  document.body.appendChild(dragImage)
 
-  event.dataTransfer?.setDragImage(dragImage, 70, 70);
-};
+  if (event.dataTransfer) {
+    event.dataTransfer.setDragImage(dragImage, 70, 70)
+  }
+}
 
 const dragOver = (event: DragEvent): void => {
-  event.preventDefault();
-};
+  event.preventDefault()
+}
 
 const drop = (event: DragEvent): void => {
-  event.preventDefault();
+  event.preventDefault()
 
-  const index = Number((event.target as HTMLElement).id);
+  const target = event.target as HTMLElement
+  const index = Number(target.id)
 
   if (draggedItemIndex.value !== index && draggedItemIndex.value !== -1) {
-    const array = JSON.parse(JSON.stringify(inventoryArray.value)) as InventoryItem[];
+    const array = JSON.parse(JSON.stringify(inventoryArray.value))
 
-    const temp = array[index];
-    array[index] = array[draggedItemIndex.value];
-    array[draggedItemIndex.value] = temp;
+    const temp = array[index]
+    array[index] = array[draggedItemIndex.value]
+    array[draggedItemIndex.value] = temp
 
-    inventoryArray.value = array;
-    saveToLocalStorage('inventoryArray', array);
+    inventoryArray.value = array
+    saveToLocalStorage('inventoryArray', array)
   }
-  draggedItemIndex.value = -1;
-};
+  draggedItemIndex.value = -1
+}
 
-const dragEnd = (event: DragEvent): void => {
-  document.body.style.cursor = 'auto';
-  draggedItemIndex.value = -1;
+const dragEnd = (event?: DragEvent): void => {
+  document.body.style.cursor = 'auto'
+  draggedItemIndex.value = -1
 
-  if (event.target) {
-    (event.target as HTMLElement).style.opacity = '1';
+  if (event?.target) {
+    (event.target as HTMLElement).style.opacity = '1'
   }
 
-  const dragImage = document.querySelector('.drag-image');
+  const dragImage = document.querySelector('.drag-image')
   if (dragImage) {
-    dragImage.remove();
+    dragImage.remove()
   }
-};
+}
 
+// Открытие popup инвентаря
 const openInventoryPopup = (array: InventoryItem[], id: number): void => {
-  const foundCell = array.find((cell) => cell.id === id);
-  if (!isInventoryPopupOpen.value && foundCell?.count) {
-    isInventoryPopupOpen.value = true;
-    setCellValue(foundCell);
-  } else if (isInventoryPopupOpen.value && foundCell?.count === 0) {
-    closeInventoryPopup(array);
-  } else if (isInventoryPopupOpen.value && foundCell?.count) {
-    closeInventoryPopup(array);
-    setTimeout(() => {
-      isInventoryPopupOpen.value = true;
-      setCellValue(foundCell);
-    }, 300);
-  }
-};
-
-const setCellValue = (foundCell: InventoryItem): void => {
-  currentCell.value = { ...foundCell, maxValue: foundCell.count, active: true };
-};
-
-const closeInventoryPopup = (array: InventoryItem[]): void => {
-  array.forEach((cell) => (cell.active = false));
-  isInventoryPopupOpen.value = false;
-};
-
-const decreaseCellCount = (array: InventoryItem[], id: number): void => {
-  const foundCell = array.find((cell) => cell.id === id);
+  const foundCell = array.find(cell => cell.id === id)
   if (foundCell) {
-    foundCell.count -= currentCell.value.count;
-    isInventoryFormOpen.value = false;
-    setTimeout(() => {
-      isInventoryPopupOpen.value = false;
-    }, 200);
-    saveToLocalStorage('inventoryArray', array);
+    if (!isInventoryPopupOpen.value && foundCell.count) {
+      isInventoryPopupOpen.value = true
+      setCellValue(foundCell)
+    } else if (isInventoryPopupOpen.value && foundCell.count === 0) {
+      closeInventoryPopup(array)
+    } else if (isInventoryPopupOpen.value && foundCell.count) {
+      closeInventoryPopup(array)
+      setTimeout(() => {
+        isInventoryPopupOpen.value = true
+        setCellValue(foundCell)
+      }, 300)
+    }
   }
-};
+}
+
+// Установка значения текущей ячейки
+const setCellValue = (foundCell: InventoryItem): void => {
+  currentCell.value = { ...foundCell, maxValue: foundCell.count, active: true }
+}
+
+// Закрытие popup инвентаря
+const closeInventoryPopup = (array: InventoryItem[]): void => {
+  array.forEach(cell => cell.active = false)
+  isInventoryPopupOpen.value = false
+}
+
+// Уменьшение количества в ячейке
+const decreaseCellCount = (array: InventoryItem[], id: number): void => {
+  const foundCell = array.find(cell => cell.id === id)
+  if (foundCell) {
+    foundCell.count -= currentCell.value.count
+    isInventoryFormOpen.value = false
+    setTimeout(() => {
+      isInventoryPopupOpen.value = false
+    }, 200)
+    saveToLocalStorage('inventoryArray', array)
+  }
+}
 </script>
 
 <template>
@@ -248,11 +234,11 @@ const decreaseCellCount = (array: InventoryItem[], id: number): void => {
                 </div>
                 <div class="inventory__content">
                   <div class="inventory__title skeleton skeleton--title"></div>
-                  <div class="inventory__text skeleton skeleton--text skeleton-100"></div>
-                  <div class="inventory__text skeleton skeleton--text skeleton-100"></div>
-                  <div class="inventory__text skeleton skeleton--text skeleton-100"></div>
-                  <div class="inventory__text skeleton skeleton--text skeleton-80"></div>
-                  <div class="inventory__text skeleton skeleton--text skeleton-45"></div>
+                  <div class="inventory__text skeleton skeleton--text"></div>
+                  <div class="inventory__text skeleton skeleton--text"></div>
+                  <div class="inventory__text skeleton skeleton--text"></div>
+                  <div class="inventory__text skeleton skeleton--text"></div>
+                  <div class="inventory__text skeleton skeleton--text"></div>
                 </div>
                 <button
                   class="btn inventory__delete btn-primary"
@@ -781,11 +767,6 @@ button:hover {
   padding: 16px 0;
   border-top: 1px solid var(--color-primary-border);
   border-bottom: 1px solid var(--color-primary-border);
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 
 // - кнопка удаления предмета.
