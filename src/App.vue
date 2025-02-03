@@ -248,11 +248,11 @@ const decreaseCellCount = (array: InventoryItem[], id: number): void => {
                 </div>
                 <div class="inventory__content">
                   <div class="inventory__title skeleton skeleton--title"></div>
-                  <div class="inventory__text skeleton skeleton--text"></div>
-                  <div class="inventory__text skeleton skeleton--text"></div>
-                  <div class="inventory__text skeleton skeleton--text"></div>
-                  <div class="inventory__text skeleton skeleton--text"></div>
-                  <div class="inventory__text skeleton skeleton--text"></div>
+                  <div class="inventory__text skeleton skeleton--text skeleton-100"></div>
+                  <div class="inventory__text skeleton skeleton--text skeleton-100"></div>
+                  <div class="inventory__text skeleton skeleton--text skeleton-100"></div>
+                  <div class="inventory__text skeleton skeleton--text skeleton-80"></div>
+                  <div class="inventory__text skeleton skeleton--text skeleton-45"></div>
                 </div>
                 <button
                   class="btn inventory__delete btn-primary"
@@ -781,6 +781,11 @@ button:hover {
   padding: 16px 0;
   border-top: 1px solid var(--color-primary-border);
   border-bottom: 1px solid var(--color-primary-border);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 // - кнопка удаления предмета.
