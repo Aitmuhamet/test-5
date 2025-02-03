@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import './assets/css/fonts.css'
+
 import { ref } from 'vue'
 // import HelloWorld from './components/HelloWorld.vue'
 
 const isInventoryPopupOpen = ref(false);
 const isInventoryFormOpen = ref(false);
-const isBottomCardOpen = ref(false);
+const isBottomCardOpen = ref(true);
 
 const inventoryArray = ref([
   { id: 1, color: 'inventory__icon--green', count: 10, active: false },
@@ -41,6 +42,69 @@ const currentCell = ref({
   count: 0,
   maxValue: 0
 })
+
+const draggedItemIndex = ref(-1);
+
+const dragStart = (index: number, event: any) => {
+  document.body.style.cursor = `help`
+  console.log('document dragStart', document.body.style.cursor);
+  
+
+  draggedItemIndex.value = index;
+
+  const draggetElement = event.target
+  const dragImage = draggetElement.cloneNode(true);
+
+  dragImage.style.position = 'absolute'
+  dragImage.style.zIndex = '-9999'
+  dragImage.classList.add('drag-image')
+  document.body.appendChild(dragImage)
+
+  event.dataTransfer.setDragImage(dragImage, 70, 70);
+};
+
+const dragOver = (event: any) => {
+  console.log('document dragOver', document.body.style.cursor);
+  
+  event.preventDefault();
+  // event.target.classList.add('active')
+  // Подсвечиваем ячейку, над которой находится перетаскиваемый элемент (опционально)
+};
+
+const drop = (event: any) => {
+  event.preventDefault()
+
+  const index = Number(event.target.id);
+
+  if (draggedItemIndex.value !== index && draggedItemIndex.value !== -1) {
+    const array = JSON.parse(JSON.stringify(inventoryArray.value));
+
+    const temp = array[index]
+    array[index] = array[draggedItemIndex.value];
+    array[draggedItemIndex.value] = temp
+
+    inventoryArray.value = array
+  }
+  draggedItemIndex.value = -1;
+
+  console.log('event drop', event);
+};
+
+const dragEnd = () => {
+  document.body.style.cursor = 'auto'
+
+  draggedItemIndex.value = -1;
+  if (event?.target) {
+    event.target.style.opacity = 1;
+  }
+
+  const dragImage = document.querySelector('.drag-image');
+  if (dragImage) {
+    dragImage.remove();
+  }
+};
+
+
 
 const openInventoryPopup = (array, id) => {
   const foundCell = array.find(cell => cell.id === id)
@@ -90,23 +154,32 @@ const decreaseCellCount = (array, id) => {
                 src="./assets/card-image.png"
                 alt="..."
               >
-              <div class="card__title skeleton skeleton--title"></div>
-              <div class="card__text skeleton skeleton--text"></div>
-              <div class="card__text skeleton skeleton--text"></div>
-              <div class="card__text skeleton skeleton--text"></div>
-              <div class="card__text skeleton skeleton--text"></div>
-              <div class="card__text skeleton skeleton--text"></div>
-              <div class="card__text skeleton skeleton--text"></div>
+              <div class="card__title skeleton skeleton--title skeleton-90"></div>
+              <div class="card__text skeleton skeleton--text skeleton-75"></div>
+              <div class="card__text skeleton skeleton--text skeleton-95"></div>
+              <div class="card__text skeleton skeleton--text skeleton-80"></div>
+              <div class="card__text skeleton skeleton--text skeleton-75"></div>
+              <div class="card__text skeleton skeleton--text skeleton-60"></div>
+              <div class="card__text skeleton skeleton--text skeleton-45"></div>
             </div>
           </div>
           <div class="column column--2-3">
             <div class="inventory">
-              <div class="inventory__grid">
+              <div
+                class="inventory__grid"
+                @drop="drop"
+                @dragover.prevent="dragOver"
+                @dragend="dragEnd"
+              >
+
                 <div
-                  v-for="cell in inventoryArray"
-                  :key="cell.id"
-                  class="inventory__cell"
-                  :class="{ 'active': cell.active }"
+                  v-for="(cell, index) in inventoryArray"
+                  :key="index"
+                  :id="String(index)"
+                  :class="{ 'active': cell.active, 'dragging': draggedItemIndex === index }"
+                  draggable="true"
+                  class="inventory__cell custom-cursor"
+                  @dragstart="dragStart(index, $event)"
                   @click="openInventoryPopup(inventoryArray, cell.id)"
                 >
                   <div
@@ -265,6 +338,16 @@ button {
   display: flex;
   justify-content: center;
 }
+.custom-cursor:hover {
+  cursor: url('./assets/akar-cursor.svg'), auto;
+}
+.custom-cursor:active {
+  cursor: url('./assets/hand-grab.svg'), auto;
+}
+
+body {
+  // cursor: 
+}
 
 .btn {
   padding: 0;
@@ -292,6 +375,27 @@ button {
   color: var(--color-primary-black);
 }
 
+.drag-image {
+  // cursor: 'grab' !important;
+  position: relative;
+  border-radius: 24px;
+  height: 100px;
+  width: 105px;
+  border: 1px solid var(--color-primary-border);
+  background-color: rgb(var(--color-secondary-bg));
+  
+  .inventory__count {
+    display: none;
+  }
+}
+.drag-image::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-image: url("./assets/hand-grab.svg");
+}
+
 .skeleton {
   background: var(--skeleton-gradient);
   background-size: 100% 100%;
@@ -300,7 +404,24 @@ button {
   opacity: 0.7;
   /* Adjust opacity as needed */
 }
-
+.skeleton-100 {
+  width: 100%;
+}
+.skeleton-95 {
+  width: 95%;
+}
+.skeleton-80 {
+  width: 80%;
+}
+.skeleton-75 {
+  width: 75%;
+}
+.skeleton-60 {
+  width: 60%;
+}
+.skeleton-45 {
+  width: 45%;
+}
 .skeleton--title {
   height: 26px;
   width: 190px;
@@ -311,7 +432,7 @@ button {
 
 .skeleton--text {
   height: 10px;
-  width: 95%;
+  // width: 95%;
   margin-bottom: 16px;
   border-radius: 10px;
 }
@@ -472,8 +593,8 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-
   position: relative;
+
 }
 
 .inventory__cell.active {
