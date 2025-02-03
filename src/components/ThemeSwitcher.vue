@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import Moon from './SolarMoonBoldDuotone.vue'
+import Sun from './SolarSun2BoldDuotone.vue'
 
 const isLight = ref<boolean>(false);
 
 const toggleTheme = (): void => {
+    console.log('change theme');
+    
   isLight.value = !isLight.value;
   document.documentElement.classList.toggle('light', isLight.value);
   localStorage.setItem('theme', isLight.value ? 'light' : 'dark');
@@ -22,7 +26,10 @@ onMounted(() => {
         @click="toggleTheme"
         class="theme-switcher"
     >
-        {{ isLight ? '🌙' : '☀️' }}
+    <div class="theme-icon">
+        <Moon  v-if="isLight"/>
+        <Sun v-else />
+    </div>
     </button>
 </template>
 
@@ -31,6 +38,12 @@ onMounted(() => {
   position: absolute;
   top: 20px;
   right: 20px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
   padding: 5px;
   background-color: rgb(var(--color-primary-bg), .1);
   transition: background-color .3s ease, transform .3s ease;
