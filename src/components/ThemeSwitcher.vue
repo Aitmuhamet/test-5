@@ -47,6 +47,15 @@ onMounted(() => {
     transition: background-color .3s ease, transform .3s ease;
 }
 
+.theme-switcher::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: calc(100% + 20px);
+  height: calc(100% + 20px);
+}
+
 .theme-switcher:hover {
     background-color: rgb(var(--color-secondary), .1);
 }

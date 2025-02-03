@@ -515,6 +515,7 @@ button:hover {
 
   &__container {
     height: 660px;
+    width: 843px;
 
     margin: 0 auto;
     padding: 30px;
