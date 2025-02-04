@@ -81,6 +81,8 @@ const dragStart = (index: number, event: DragEvent): void => {
   if (event.dataTransfer) {
     event.dataTransfer.setDragImage(dragImage, 70, 70)
   }
+
+  document.body.classList.add('custom-cursor');
 }
 
 const dragOver = (event: DragEvent): void => {
@@ -376,6 +378,7 @@ button:hover {
   max-width: unset;
   width: 100vw;
   height: 100svh;
+  overflow: hidden;
 
   background: var(--color-primary-bg);
 
@@ -386,14 +389,28 @@ button:hover {
 .app-inner {
   display: flex;
   align-items: center;
+  
 }
 
 .custom-cursor:hover {
   cursor: url('./assets/akar-cursor.svg'), auto;
 }
 
-.custom-cursor:active {
+.custom-cursor:active,
+.custom-cursor:focus {
   cursor: url('./assets/hand-grab.svg'), auto;
+}
+
+.light {
+  .custom-cursor:hover {
+    cursor: url('./assets/akar-cursor-dark.svg'), auto;
+  }
+  
+  .custom-cursor:active,
+  .custom-cursor:focus  {
+    cursor: url('./assets/hand-grab-dark.svg'), auto;
+  }
+
 }
 
 .btn {
@@ -407,16 +424,20 @@ button:hover {
 }
 
 .drag-image {
-  // cursor: 'grab' !important;
   position: relative;
   border-radius: 24px;
   height: 100px;
   width: 105px;
   border: 1px solid var(--color-primary-border);
-  background-color: rgb(var(--color-secondary-bg));
+  // background-color: rgb(var(--color-secondary-bg));
 
   .inventory__count {
     display: none;
+  }
+
+  &:active,
+  &:hover {
+    cursor: url('./assets/hand-grab-dark.svg'), auto;
   }
 }
 
@@ -515,7 +536,6 @@ button:hover {
 
   &__container {
     height: 660px;
-    width: 843px;
 
     margin: 0 auto;
     padding: 30px;
@@ -875,7 +895,7 @@ button:hover {
 }
 
 .btn-primary {
-  color: rgb(var(--color-secondary));
+  color: rgb(var(--color-primary-white));
   background-color: var(--color-primary-red);
 }
 
