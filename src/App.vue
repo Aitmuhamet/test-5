@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import ThemeSwitcher from './components/ThemeSwitcher.vue'
 import CiCloseBig from './components/CiCloseBig.vue'
-import imageSrc from './assets/card-image.png?w=800&webp';
+import imageSrc from './assets/card-image.png?w=800&format=webp';
 
 // Интерфейс для элемента инвентаря
 interface InventoryItem {
