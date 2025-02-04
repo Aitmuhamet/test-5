@@ -350,7 +350,9 @@ button {
   padding: 0;
   margin: 0;
 }
-
+body {
+  overflow: hidden;
+}
 button {
   outline: none;
   border: none;
