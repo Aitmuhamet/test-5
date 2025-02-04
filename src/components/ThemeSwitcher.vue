@@ -21,6 +21,7 @@ onMounted(() => {
 
 <template>
     <button
+        aria-label="Сменить тему"
         @click="toggleTheme"
         class="theme-switcher"
     >

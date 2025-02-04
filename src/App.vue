@@ -227,6 +227,7 @@ const decreaseCellCount = (id: number): void => {
                 <button
                   class="inventory--close"
                   @click="closeInventoryPopup()"
+                  aria-label="Закрыть инвентарь"
                 >
                   <CiCloseBig />
                 </button>
@@ -285,6 +286,7 @@ const decreaseCellCount = (id: number): void => {
             <div class="card">
               <div class="textarea skeleton skeleton--textarea"></div>
               <button
+                aria-label="Закрыть карточку"
                 class="btn card__btn--close"
                 @click="isBottomCardOpen = false"
               >
