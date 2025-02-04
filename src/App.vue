@@ -198,7 +198,7 @@ const decreaseCellCount = (id: number): void => {
           <div class="column column--2-3">
             <div class="inventory">
               <div
-                class="inventory__grid"
+                class="inventory__grid custom-cursor"
                 @drop="drop"
                 @dragover.prevent="dragOver"
                 @dragend="dragEnd"
@@ -556,12 +556,14 @@ button:hover {
   }
 
   @media (max-width: 1024px) {
-    max-width: 90%;
-    transform: scale(100vw / 1024);
+    &__container {
+      flex-wrap: wrap;
+      max-width: 1024px;
+      width: 100%;
+    }
   }
 
   @media (max-width: 768px) {
-    max-width: 100%;
   }
 }
 
