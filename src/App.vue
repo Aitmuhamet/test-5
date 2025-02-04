@@ -2,7 +2,9 @@
 import { ref } from 'vue'
 import ThemeSwitcher from './components/ThemeSwitcher.vue'
 import CiCloseBig from './components/CiCloseBig.vue'
-import imageSrc from './assets/card-image.png?w=800&format=webp';
+
+import cardImage from './assets/card-image.png?w=206&h=238&format=webp';
+import cardImageLarge from './assets/card-image.png?w=309&h=357&format=webp';
 
 // Интерфейс для элемента инвентаря
 interface InventoryItem {
@@ -180,7 +182,8 @@ const decreaseCellCount = (id: number): void => {
             <div class="card">
               <img
                 class="card__image"
-                :src="imageSrc"
+                :src="cardImage"
+                :srcset="`${cardImage} 1x, ${cardImageLarge} 1.5x`"
                 alt="Карточка предмета"
               >
               <div class="card__title skeleton skeleton--title skeleton-90"></div>
